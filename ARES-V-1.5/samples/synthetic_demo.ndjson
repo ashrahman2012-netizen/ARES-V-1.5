@@ -1,0 +1,5 @@
+{"type": "access", "accessor": {"identifier": "net.whatsapp.WhatsApp", "identifierType": "bundleID"}, "category": "microphone", "identifier": "A", "kind": "intervalBegin", "timeStamp": "2026-08-28T20:13:04+01:00"}
+{"type": "access", "accessor": {"identifier": "net.whatsapp.WhatsApp", "identifierType": "bundleID"}, "category": "camera", "identifier": "B", "kind": "intervalBegin", "timeStamp": "2026-08-28T20:13:05+01:00"}
+{"type": "networkActivity", "bundleID": "net.whatsapp.WhatsApp", "firstTimeStamp": "2026-08-28T20:13:10+01:00", "timeStamp": "2026-08-28T20:13:10+01:00", "domain": "g.whatsapp.net", "hits": 1}
+{"type": "access", "accessor": {"identifier": "net.whatsapp.WhatsApp", "identifierType": "bundleID"}, "category": "camera", "identifier": "B", "kind": "intervalEnd", "timeStamp": "2026-08-28T20:23:14+01:00"}
+{"type": "access", "accessor": {"identifier": "net.whatsapp.WhatsApp", "identifierType": "bundleID"}, "category": "microphone", "identifier": "A", "kind": "intervalEnd", "timeStamp": "2026-08-28T20:23:15+01:00"}

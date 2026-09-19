@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARES v1.5 — HARE + BTE</title>
+<style>
+:root{--bg:#0b1220;--panel:#101b2d;--line:#263750;--text:#e8eef7;--muted:#9eb0c7;--blue:#4da3ff;--green:#4fd18b;--amber:#f1bd54;--purple:#ae8cff}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{height:62px;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--line);background:#0d1727;position:sticky;top:0;z-index:10}
+.logo{font-weight:800;letter-spacing:.08em}.version{font-size:12px;color:var(--muted);background:#1b2b42;padding:5px 8px;border-radius:8px}
+main{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 62px)}nav{padding:16px;border-right:1px solid var(--line);background:#0c1524}
+nav button{width:100%;text-align:left;margin:4px 0;padding:11px;border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer}
+nav button.active,nav button:hover{background:#172740;color:white}.content{padding:18px;overflow:auto}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.primary,.fileLabel{background:var(--blue);color:#05111f;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+input[type=file]{display:none}input,select{background:#0f1d31;color:white;border:1px solid var(--line);border-radius:8px;padding:9px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:14px 0}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px}.card{padding:14px}.card .n{font-size:28px;font-weight:800;margin-top:6px}
+.panel{margin:12px 0;overflow:hidden}.panel h3{margin:0;padding:13px 15px;border-bottom:1px solid var(--line);font-size:15px}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px;border-bottom:1px solid #203149;text-align:left;vertical-align:top}
+th{position:sticky;top:62px;background:#16243a;z-index:2;color:#bfd0e5}.small{font-size:12px;color:var(--muted)}.hidden{display:none}
+.badge{display:inline-block;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:700}.veryhigh{background:#183a2c;color:#80e3ac}.high{background:#18334c;color:#82c4ff}.moderate{background:#493b1c;color:#f9d47b}
+.recorded{color:var(--green)}.correlated{color:var(--amber)}.inferred{color:var(--purple)}.score{font-weight:700}
+.progress{height:7px;background:#23344d;border-radius:4px;overflow:hidden;margin-top:5px}.progress span{display:block;height:100%;background:var(--blue)}
+.activityRow{cursor:pointer}.activityRow:hover{background:#12233a}.inspector{white-space:pre-wrap;max-height:550px;overflow:auto;font-family:Consolas,monospace;font-size:12px;color:#d3def0;padding:14px}
+.notice{padding:10px 12px;border:1px solid #665427;background:#2a2517;color:#e7ce8b;border-radius:9px;margin:10px 0}
+</style></head>
+<body>
+<header><div class="logo">ARES</div><div class="version">v1.5 — HARE + BTE</div><div class="small">Human Activity Reconstruction + Behavioural Transition Engine</div></header>
+<main>
+<nav id="nav">
+<button data-view="dashboard" class="active">Dashboard</button>
+<button data-view="activities">User Activities</button>
+<button data-view="observations">Observations</button>
+<button data-view="network">Network Context</button>
+<button data-view="apps">App Usage</button>
+<button data-view="contactmgmt">Contact Management</button>
+<button data-view="inspector">Evidence Inspector</button>
+<button data-view="method">Methodology</button>
+</nav>
+<section class="content">
+<div class="toolbar">
+<label class="fileLabel">Import APR .ndjson<input id="fileInput" type="file" accept=".ndjson,.json"></label>
+<select id="dateFilter"><option value="">All dates</option></select>
+<select id="appFilter"><option value="">All apps</option></select>
+<select id="involvementFilter"><option value="">All involvement</option><option>Very High</option><option>High</option><option>Moderate</option></select>
+<input id="search" placeholder="Search activity, app, domain">
+<button class="primary" id="exportBtn">Export Activities CSV</button>
+</div>
+<div id="status" class="small">Import an Apple App Privacy Report to begin.</div>
+
+<div id="dashboard" class="view"><div class="cards" id="cards"></div><div class="panel"><h3>Major User Activity Timeline</h3><div id="headline"></div></div></div>
+<div id="activities" class="view hidden"><div class="notice">Primary timeline = activities with meaningful evidence of deliberate user involvement. Background/network-only observations are excluded unless they strengthen an active session.</div><div class="panel"><h3>High-Level User Activity Items</h3><div id="activityTable"></div></div></div>
+<div id="observations" class="view hidden"><div class="panel"><h3>Low-Level APR Observations</h3><div id="observationTable"></div></div></div>
+<div id="network" class="view hidden"><div class="panel"><h3>Network Context</h3><div id="networkTable"></div></div></div>
+<div id="apps" class="view hidden"><div class="panel"><h3>Reconstructed App-Active Time</h3><div id="appTable"></div></div></div>
+<div id="contactmgmt" class="view hidden">
+<div class="notice">Candidate detection only. APR evidence does not directly record a semantic Block/Unblock action. ARES therefore reports Potential Contact-Management Events and preserves alternative explanations.</div>
+<div class="panel"><h3>Potential Contact-Management Events</h3><div id="contactMgmtTable"></div></div>
+</div>
+<div id="inspector" class="view hidden"><div class="panel"><h3>Selected Evidence</h3><div id="inspectorBody" class="inspector">Select an activity or observation.</div></div></div>
+<div id="method" class="view hidden"><div class="panel"><h3>ARES v1.4 HARE methodology</h3><div style="padding:15px;line-height:1.55">
+<p><b>Observation layer:</b> every APR access/network record is retained without claiming it is a user action.</p>
+<p><b>Primary signals:</b> sustained microphone/camera, Camera app use, and clustered browser/video traffic can establish or strongly indicate active use.</p>
+<p><b>Supporting signals:</b> Contacts, Photos, Location and ordinary network traffic support an activity but normally do not create one alone.</p>
+<p><b>Segmentation:</b> same-app primary observations separated by short gaps are merged into a single human-level activity item.</p>
+<p><b>Two confidence dimensions:</b> Evidence status is separate from User Involvement.</p>
+<p><b>Network context:</b> network records are attached to overlapping/nearby user activities where possible. Isolated network records remain background context.</p>
+<p><b>Behavioural transition rule:</b> direct Phone/Contacts activity + unusual Contacts-resource access + possible Settings/system transition + change in later call/contact behaviour → Potential Contact-Management Event. Missing components reduce confidence; no APR-only candidate is called a confirmed block/unblock.</p>
+<p><b>APR limits:</b> no universal Screen Time, message content, call direction, participant identity, or proof of individual text-message sends.</p>
+</div></div></div>
+</section></main>
+<script src="src/hare.js"></script>
+</body></html>
